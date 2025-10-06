@@ -1,0 +1,10 @@
+# Java / Maven / IDE
+/target/
+/.idea/
+/*.iml
+*.class
+*.log
+
+# ignore real local config and env files
+/src/main/resources/application.properties
+.env
