@@ -83,17 +83,24 @@ public class PaymentServiceImpl implements PaymentService {
     @Value("${STRIPE_API_KEY}")
     private String stripeSecretKey;
 
-    @Value("${STRIPE_SUCCESS_URL}")
+    @Value("${stripe.success.url}")
     private String successUrl;
 
-    @Value("${STRIPE_CANCEL_URL}")
+    @Value("${stripe.cancel.url}")
     private String cancelUrl;
+
 
     // Confirm Stripe key is loaded
     @PostConstruct
     public void init() {
+        stripeSecretKey = System.getenv("STRIPE_API_KEY");
+        successUrl = System.getenv("STRIPE_SUCCESS_URL");
+        cancelUrl = System.getenv("STRIPE_CANCEL_URL");
+
         System.out.println("Stripe Secret Key Loaded: " + (stripeSecretKey != null ? "✅" : "❌"));
     }
+
+
 
     @Override
     public PaymentRespopnse createPaymentLink(OrderResponse order) throws StripeException {
