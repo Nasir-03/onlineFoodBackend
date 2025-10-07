@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import food.example.online.food.dto.AddressResponse;
 import food.example.online.food.dto.CustomerResponse;
+import food.example.online.food.dto.OrderItemRequest;
 import food.example.online.food.dto.OrderItemResponse;
 import food.example.online.food.dto.OrderRequest;
 import food.example.online.food.dto.OrderResponse;
@@ -34,121 +35,122 @@ public class OrderServiceImpl implements OrderService {
 	private UserRepository userRepository;
 	private ResturantService resturantService;
 	private CartService cartService;
+	private FoodService foodService;
 
 	@Autowired
 	public OrderServiceImpl(OrderRepository orderRepository, OrderItemRepository orderItemRepository,
 			AdressRepository adressRepository, UserRepository userRepository, ResturantService resturantService,
-			CartService cartService) {
+			CartService cartService,FoodService foodService) {
 		this.orderRepository = orderRepository;
 		this.orderItemRepository = orderItemRepository;
 		this.adressRepository = adressRepository;
 		this.userRepository = userRepository;
 		this.resturantService = resturantService;
 		this.cartService = cartService;
+		this.foodService = foodService;
 	}
 
 //	@Override
-//	public Order createOrder(OrderRequest order, User user)throws Exception {
+//	public OrderResponse createOrder(OrderRequest order, User user) throws Exception {
 //		Address shipAddress = order.getDeliveryAddress();
 //		Address savedAddress = adressRepository.save(shipAddress);
-//		
+//
 //		if (!user.getAddresses().contains(savedAddress)) {
 //			user.getAddresses().add(savedAddress);
 //			userRepository.save(user);
 //		}
-//		
+//
 //		Resturant resturant = resturantService.findResturantById(order.getResturantId());
-//		
+//
 //		Order createOrder = new Order();
 //		createOrder.setCustomer(user);
 //		createOrder.setCreateAt(new Date());
-//		createOrder.setDeliveryAddress(shipAddress);
+//		createOrder.setDeliveryAddress(savedAddress);
 //		createOrder.setOrderStatus("PENDING");
 //		createOrder.setResturant(resturant);
-//		
+//
 //		Cart cart = cartService.findCartByUserId(user.getId());
-//		
+//
 //		List<OrderItems> orderItems = new ArrayList<>();
-//		
-////		for (CartItems items : cart.getListItems()) {
-////			OrderItems orderItem = new OrderItems();
-////			orderItem.setFood(items.getFood());
-////			orderItem.setIngredients(items.getIngredients());
-////			orderItem.setQuantity(items.getQuantity());
-////			orderItem.setTotalPrice(items.getTotalPrice());
-////		
-////		    OrderItems savedOrderItems = orderItemRepository.save(orderItem);
-////		    orderItems.add(savedOrderItems);
-////		}
-//		
+//
 //		for (CartItems items : cart.getListItems()) {
-//		    OrderItems orderItem = new OrderItems();
-//		    orderItem.setFood(items.getFood());
-//		    orderItem.setIngredients(new ArrayList<>(items.getIngredients())); // ✅ copy list
-//		    orderItem.setQuantity(items.getQuantity());
-//		    orderItem.setTotalPrice(items.getTotalPrice());
+//			OrderItems orderItem = new OrderItems();
+//			orderItem.setFood(items.getFood());
+//			orderItem.setIngredients(new ArrayList<>(items.getIngredients())); // copy
+//			orderItem.setQuantity(items.getQuantity());
+//			orderItem.setTotalPrice(items.getTotalPrice());
 //
-//		    OrderItems savedOrderItems = orderItemRepository.save(orderItem);
-//		    orderItems.add(savedOrderItems);
+//			orderItem.setOrder(createOrder);
+//			orderItems.add(orderItem);
+////	            OrderItems savedOrderItems = orderItemRepository.save(orderItem);
+////	            orderItems.add(savedOrderItems);
 //		}
+//		
+//		
 //
-//		
-//		
 //		createOrder.setOrderItems(orderItems);
 //		createOrder.setTotalPrice(cart.getTotal());
-//		
+//		createOrder.setTotalItem(orderItems.size());
+//
 //		Order savedOrder = orderRepository.save(createOrder);
 //		resturant.getOrders().add(savedOrder);
-//		return createOrder;
+//
+//		return mapToResponse(savedOrder);
 //	}
-
+	
 	@Override
-	public OrderResponse createOrder(OrderRequest order, User user) throws Exception {
-		Address shipAddress = order.getDeliveryAddress();
-		Address savedAddress = adressRepository.save(shipAddress);
+	public OrderResponse createOrder(OrderRequest orderRequest, User user) throws Exception {
+	    System.out.println("Creating order for user: " + user.getEmail());
+	    System.out.println("Resturant ID: " + orderRequest.getResturantId());
 
-		if (!user.getAddresses().contains(savedAddress)) {
-			user.getAddresses().add(savedAddress);
-			userRepository.save(user);
-		}
+	    Address shipAddress = orderRequest.getDeliveryAddress();
+	    Address savedAddress = adressRepository.save(shipAddress);
 
-		Resturant resturant = resturantService.findResturantById(order.getResturantId());
+	    if (!user.getAddresses().contains(savedAddress)) {
+	        user.getAddresses().add(savedAddress);
+	        userRepository.save(user);
+	    }
 
-		Order createOrder = new Order();
-		createOrder.setCustomer(user);
-		createOrder.setCreateAt(new Date());
-		createOrder.setDeliveryAddress(savedAddress);
-		createOrder.setOrderStatus("PENDING");
-		createOrder.setResturant(resturant);
+	    Resturant resturant = resturantService.findResturantById(orderRequest.getResturantId());
+	    if (resturant == null) {
+	        throw new RuntimeException("Resturant not found for ID: " + orderRequest.getResturantId());
+	    }
 
-		Cart cart = cartService.findCartByUserId(user.getId());
+	    Order createOrder = new Order();
+	    createOrder.setCustomer(user);
+	    createOrder.setCreateAt(new Date());
+	    createOrder.setDeliveryAddress(savedAddress);
+	    createOrder.setOrderStatus("PENDING");
+	    createOrder.setResturant(resturant);
 
-		List<OrderItems> orderItems = new ArrayList<>();
+	    List<OrderItems> orderItems = new ArrayList<>();
 
-		for (CartItems items : cart.getListItems()) {
-			OrderItems orderItem = new OrderItems();
-			orderItem.setFood(items.getFood());
-			orderItem.setIngredients(new ArrayList<>(items.getIngredients())); // copy
-			orderItem.setQuantity(items.getQuantity());
-			orderItem.setTotalPrice(items.getTotalPrice());
+	    if (orderRequest.getItems() == null || orderRequest.getItems().isEmpty()) {
+	        throw new RuntimeException("Cart items are empty");
+	    }
 
-			orderItem.setOrder(createOrder);
-			orderItems.add(orderItem);
-//	            OrderItems savedOrderItems = orderItemRepository.save(orderItem);
-//	            orderItems.add(savedOrderItems);
-		}
-		
-		
+	    for (OrderItemRequest itemReq : orderRequest.getItems()) {
+	        OrderItems orderItem = new OrderItems();
+	        orderItem.setFood(foodService.findFoodById(itemReq.getFoodId())); // make sure you have foodService
+	        orderItem.setIngredients(itemReq.getIngredients() != null ? new ArrayList<>(itemReq.getIngredients()) : new ArrayList<>());
+	        orderItem.setQuantity(itemReq.getQuantity());
+	        orderItem.setTotalPrice(itemReq.getTotalPrice());
+	        orderItem.setOrder(createOrder);
 
-		createOrder.setOrderItems(orderItems);
-		createOrder.setTotalPrice(cart.getTotal());
-		createOrder.setTotalItem(orderItems.size());
+	        orderItems.add(orderItem);
+	    }
 
-		Order savedOrder = orderRepository.save(createOrder);
-		resturant.getOrders().add(savedOrder);
+	    createOrder.setOrderItems(orderItems);
+	    createOrder.setTotalPrice(orderItems.stream().mapToDouble(OrderItems::getTotalPrice).sum());
+	    createOrder.setTotalItem(orderItems.size());
 
-		return mapToResponse(savedOrder);
+	    Order savedOrder = orderRepository.save(createOrder);
+	    resturant.getOrders().add(savedOrder);
+
+	    System.out.println("Order created with ID: " + savedOrder.getId());
+	    return mapToResponse(savedOrder);
 	}
+
 
 	// Map to response for create order
 	private OrderResponse mapToResponse(Order order) {
