@@ -22,7 +22,7 @@ import food.example.online.food.service.PaymentService;
 import food.example.online.food.service.UserService;
 
 @RestController
-@RequestMapping("api")
+@RequestMapping("/api")
 public class OrderController {
 
 	private UserService userService;
