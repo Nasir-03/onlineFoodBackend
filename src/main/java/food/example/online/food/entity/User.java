@@ -38,6 +38,7 @@ public class User {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "customer")
     private List<Order> orders = new ArrayList<>();
 
+
 //    @ElementCollection
 //    private List<ResturantDTO> favorites = new ArrayList<>();
 
@@ -53,9 +54,10 @@ public class User {
     @JsonManagedReference
     private List<Resturant> resturants = new ArrayList<>();
 
-
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "user_id") // this creates user_id column in Address table
     private List<Address> addresses = new ArrayList<>();
+
 
     // ✅ Getters & Setters
     public Long getId() { return id; }
