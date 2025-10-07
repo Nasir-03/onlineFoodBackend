@@ -72,23 +72,22 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+
 @Service
 public class PaymentServiceImpl implements PaymentService {
 
-    @Value("${stripe.api.key:}")
+    @Value("${stripe.api.key}")
     private String stripeSecretKey;
 
-    @Value("${stripe.success.url:}")
+    @Value("${stripe.success.url}")
     private String successUrl;
 
-    @Value("${stripe.cancel.url:}")
+    @Value("${stripe.cancel.url}")
     private String cancelUrl;
 
     @PostConstruct
     public void init() {
-        // Confirm Stripe key is loaded
-        System.out.println("Stripe Secret Key Loaded: " + 
-            (stripeSecretKey != null && !stripeSecretKey.isEmpty() ? "✅" : "❌"));
+        System.out.println("Stripe Secret Key Loaded: " + (stripeSecretKey != null && !stripeSecretKey.isEmpty() ? "✅" : "❌"));
         System.out.println("Stripe Success URL: " + successUrl);
         System.out.println("Stripe Cancel URL: " + cancelUrl);
     }
@@ -119,6 +118,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .build();
 
         Session session = Session.create(params);
+
         PaymentRespopnse res = new PaymentRespopnse();
         res.setPayment_url(session.getUrl());
 
