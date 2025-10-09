@@ -100,7 +100,7 @@ public class AppConfig {
 		// ✅ Allow localhost in dev and your Vercel frontend
 		config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5174",
 				"https://online-food-front-end-6x79.vercel.app"));
-
+		https://online-food-front-end.vercel.app/
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 		config.setAllowedHeaders(List.of("*"));
 		config.setAllowCredentials(true);

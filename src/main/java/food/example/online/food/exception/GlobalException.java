@@ -7,6 +7,8 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -28,6 +30,20 @@ public class GlobalException {
 		
 		return new ResponseEntity<ErrorResponse>(error,HttpStatus.CONFLICT);
 	}
+     
+     @ExceptionHandler(UsernameNotFoundException.class)
+     public ResponseEntity<?> handleUsernameNotFound(UsernameNotFoundException ex) {
+         Map<String, String> error = new HashMap<>();
+         error.put("message", "Invalid email");
+         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+     }
+
+     @ExceptionHandler(BadCredentialsException.class)
+     public ResponseEntity<?> handleBadCredentials(BadCredentialsException ex) {
+         Map<String, String> error = new HashMap<>();
+         error.put("message", "Invalid password");
+         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+     }
      
      @ExceptionHandler(MethodArgumentNotValidException.class)
      public ResponseEntity<Map<String, String>> handleValidationExceptions(
