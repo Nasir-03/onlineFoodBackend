@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import food.example.online.food.config.LoginReq;
@@ -28,12 +29,28 @@ public class AuthController {
 	@Autowired
 	private UserRepository userRepository;
 	
+//	 @PostMapping("/register")
+//	    public ResponseEntity<User> register(@Valid @RequestBody RegisterRequest request) throws UsernameAlreadyFoundException {
+//	        User user = authService.register(request);
+//	        return new ResponseEntity<>(user, HttpStatus.CREATED);
+//	    }
+
+	
 	 @PostMapping("/register")
-	    public ResponseEntity<User> register(@Valid @RequestBody RegisterRequest request) throws UsernameAlreadyFoundException {
-	        User user = authService.register(request);
-	        return new ResponseEntity<>(user, HttpStatus.CREATED);
+	    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request)
+	            throws UsernameAlreadyFoundException {
+	        String msg = authService.sendOtp(request);
+	        return new ResponseEntity<>(msg, HttpStatus.OK);
 	    }
 
+	    @PostMapping("/verify-otp")
+	    public ResponseEntity<User> verifyOtp(@RequestParam String email,
+	                                          @RequestParam String otp,
+	                                          @RequestBody RegisterRequest request) {
+	        User user = authService.verifyOtpAndRegister(email, otp, request);
+	        return new ResponseEntity<>(user, HttpStatus.CREATED);
+	    }
+	
 	    @PostMapping("/login")
 	    public ResponseEntity<loginResp> login(@RequestBody LoginReq request) {
 	        loginResp response = authService.login(request);
