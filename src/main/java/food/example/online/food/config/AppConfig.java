@@ -82,7 +82,9 @@ public class AppConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+				.authorizeHttpRequests(auth -> auth
+//						.requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+						 .requestMatchers("/auth/login", "/auth/register", "/auth/register-with-otp", "/auth/send-otp").permitAll()
 						.requestMatchers("/api/resturants/getAll").permitAll()
 						.requestMatchers("/api/admin/resturant/**").hasRole("RESTURANT_OWNER")
 						.requestMatchers("/api/admin/**").hasAnyRole("RESTURANT_OWNER", "ADMIN")

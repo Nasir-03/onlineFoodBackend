@@ -1,5 +1,9 @@
 package food.example.online.food.service;
 
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,38 +31,77 @@ public class AuthService {
 	private MyUserDetailsService userDetailsService;
 	private AuthenticationManager authenticationManager;
 	private CartRepository cartRepository;
+	private EmailService emailService;
+	private final Map<String, String> otpStorage = new ConcurrentHashMap<>();
 
 	public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtill jwtUtill,
 			MyUserDetailsService userDetailsService,AuthenticationManager authenticationManager,
-			CartRepository cartRepository) {
+			CartRepository cartRepository,EmailService emailService) {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.jwtUtill = jwtUtill;
 		this.userDetailsService = userDetailsService;
 		this.authenticationManager = authenticationManager;
 		this.cartRepository = cartRepository;
+		this.emailService = emailService;
 	}
 	
 
-	public User register(RegisterRequest request) throws UsernameAlreadyFoundException {
-		if (userRepository.findByEmail(request.getEmail()) != null) {
-			throw new UsernameAlreadyFoundException("Email is already registered: " + request.getEmail());
-		}
-		User user = new User();
-		user.setFullName(request.getFullName());
-		user.setEmail(request.getEmail());
-		user.setPassword(passwordEncoder.encode(request.getPassword()));
-		user.setRole(request.getRole());
-		
-		User savedUser = userRepository.save(user);
-		Cart cart = new Cart();
-		cart.setCustomer(savedUser);
-		cartRepository.save(cart);
-		return savedUser;
-	}
+//	public User register(RegisterRequest request) throws UsernameAlreadyFoundException {
+//		if (userRepository.findByEmail(request.getEmail()) != null) {
+//			throw new UsernameAlreadyFoundException("Email is already registered: " + request.getEmail());
+//		}
+//		User user = new User();
+//		user.setFullName(request.getFullName());
+//		user.setEmail(request.getEmail());
+//		user.setPassword(passwordEncoder.encode(request.getPassword()));
+//		user.setRole(request.getRole());
+//		
+//		User savedUser = userRepository.save(user);
+//		Cart cart = new Cart();
+//		cart.setCustomer(savedUser);
+//		cartRepository.save(cart);
+//		return savedUser;
+//	}
 	
 	
 
+	public String sendOtp(String email) throws Exception {
+	    if (userRepository.findByEmail(email) != null) {
+	        throw new UsernameAlreadyFoundException("Email is already registered: " + email);
+	    }
+
+	    String otp = String.valueOf(new Random().nextInt(900000) + 100000);
+	    otpStorage.put(email, otp);
+
+	    // ✅ Send OTP to actual user email
+	    emailService.sendOtpEmail(email, otp);
+
+	    return "OTP sent to " + email;
+	}
+
+
+    public User registerWithOtp(RegisterRequest request, String otp) throws Exception {
+        String storedOtp = otpStorage.get(request.getEmail());
+        if (storedOtp == null || !storedOtp.equals(otp)) {
+            throw new RuntimeException("Invalid or expired OTP");
+        }
+
+        User user = new User();
+        user.setFullName(request.getFullName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(request.getRole());
+        User savedUser = userRepository.save(user);
+
+        Cart cart = new Cart();
+        cart.setCustomer(savedUser);
+        cartRepository.save(cart);
+
+        otpStorage.remove(request.getEmail());
+        return savedUser;
+    }
+    
 	 public loginResp login(LoginReq request) {
 		 
 		 User user = userRepository.findByEmail(request.getEmail());
