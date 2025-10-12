@@ -17,7 +17,6 @@ import food.example.online.food.entity.User;
 import food.example.online.food.exception.UsernameAlreadyFoundException;
 import food.example.online.food.repository.UserRepository;
 import food.example.online.food.service.AuthService;
-import food.example.online.food.service.EmailService;
 import jakarta.validation.Valid;
 
 @RestController
@@ -30,49 +29,49 @@ public class AuthController {
 	@Autowired
 	private UserRepository userRepository;
 	
-	@Autowired
-	private EmailService emailService;
-	
-//	 @PostMapping("/register")
-//	    public ResponseEntity<User> register(@Valid @RequestBody RegisterRequest request) throws UsernameAlreadyFoundException {
-//	        User user = authService.register(request);
-//	        return new ResponseEntity<>(user, HttpStatus.CREATED);
-//	    }
-//
-
-	@PostMapping("/send-otp")
-	public ResponseEntity<String> sendOtp(@RequestParam String email) throws Exception {
-	    String message = authService.sendOtp(email);
-	    return ResponseEntity.ok(message);
-	}
-
-	    @PostMapping("/register-with-otp")
-	    public ResponseEntity<User> registerWithOtp(@RequestBody RegisterRequest request,
-	                                                @RequestParam String otp) throws Exception {
-	        User user = authService.registerWithOtp(request, otp);
+//	@Autowired
+//	private EmailService emailService;
+//	
+	 @PostMapping("/register")
+	    public ResponseEntity<User> register(@Valid @RequestBody RegisterRequest request) throws UsernameAlreadyFoundException {
+	        User user = authService.register(request);
 	        return new ResponseEntity<>(user, HttpStatus.CREATED);
 	    }
-	    
-	    @PostMapping("/register")
-	    public ResponseEntity<String> registerUser(@RequestBody RegisterRequest request) {
-	        try {
-	            // 1️⃣ Save user in DB (skip OTP for now)
-	            // userService.saveUser(request);
+//
 
-	            // 2️⃣ Generate OTP
-	            String otp = String.valueOf((int)((Math.random() * 900000) + 100000)); // 6-digit OTP
-
-	            // 3️⃣ Send OTP email
-	            emailService.sendOtpEmail(request.getEmail(), otp);
-
-	            // 4️⃣ Return OTP to frontend for testing (optional; in real apps save in DB or cache)
-	            return ResponseEntity.ok("OTP sent to " + request.getEmail());
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	            return ResponseEntity.status(500).body("Error sending OTP");
-	        }
-	    }
-	    
+//	 @PostMapping("/send-otp")
+//	    public ResponseEntity<String> sendOtp(@RequestParam String email) throws Exception {
+//	        String message = authService.sendOtp(email);
+//	        return ResponseEntity.ok(message);
+//	    }
+//
+//	    @PostMapping("/register-with-otp")
+//	    public ResponseEntity<User> registerWithOtp(@RequestBody RegisterRequest request,
+//	                                                @RequestParam String otp) throws Exception {
+//	        User user = authService.registerWithOtp(request, otp);
+//	        return new ResponseEntity<>(user, HttpStatus.CREATED);
+//	    }
+//	    
+//	    @PostMapping("/register")
+//	    public ResponseEntity<String> registerUser(@RequestBody RegisterRequest request) {
+//	        try {
+//	            // 1️⃣ Save user in DB (skip OTP for now)
+//	            // userService.saveUser(request);
+//
+//	            // 2️⃣ Generate OTP
+//	            String otp = String.valueOf((int)((Math.random() * 900000) + 100000)); // 6-digit OTP
+//
+//	            // 3️⃣ Send OTP email
+//	            emailService.sendOtpEmail(request.getEmail(), otp);
+//
+//	            // 4️⃣ Return OTP to frontend for testing (optional; in real apps save in DB or cache)
+//	            return ResponseEntity.ok("OTP sent to " + request.getEmail());
+//	        } catch (Exception e) {
+//	            e.printStackTrace();
+//	            return ResponseEntity.status(500).body("Error sending OTP");
+//	        }
+//	    }
+//	    
 	    
 	    @PostMapping("/login")
 	    public ResponseEntity<loginResp> login(@RequestBody LoginReq request) {
