@@ -3,8 +3,8 @@ FROM maven:3.9.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
 # Copy Maven build files
-COPY portal_portal/pom.xml .
-COPY portal_portal/src ./src
+COPY online-food/pom.xml .
+COPY online-food/src ./src
 
 # Build Spring Boot JAR (skip tests for speed)
 RUN mvn clean package -DskipTests
